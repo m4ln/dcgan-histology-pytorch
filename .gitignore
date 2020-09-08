@@ -1,6 +1,6 @@
 # pycharm
 .idea
-__pychache__/*
+__pycache__/
 # pip
 Pipfile.lock
 # data input and output folders
