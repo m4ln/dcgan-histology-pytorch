@@ -1,5 +1,14 @@
+# pycharm
 .idea
+__pychache__/*
+# pip
 Pipfile.lock
-__pychache__
-/output
-Pipfile.lock
+# data input and output folders
+/output*
+/train*
+# remove later from repo
+main2.py
+model_ResNet152.pt
+cgan.py
+build_gan.py
+
