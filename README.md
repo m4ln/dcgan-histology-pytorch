@@ -1,1 +1,3 @@
-# pytorch_dcgan
+# DCGAN in PyTorch for Histopathological Image Generation
+An implementation of a DCGAN (Deep Convolutional Generative Adversarial Network) for the generation of histopathological images, i.e classified glomerulus pathologies of the kidney.
+The Code is derived from Chapter 4 & 5 from [Hany, J. & Walters, G. (2019). Hands-on Generative Adversarial Networks with PyTorch 1.0 : implement next-generation neural networks to build powerful gan models using python](https://github.com/PacktPublishing/Hands-On-Generative-Adversarial-Networks-with-PyTorch-1.x#hands-on-generative-adversarial-networks-with-pytorch-10).
