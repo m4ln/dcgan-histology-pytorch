@@ -14,6 +14,7 @@ import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import torch.optim as optim
 import torch.utils.data
+import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
 
@@ -49,18 +50,22 @@ if __name__ == "__main__":
     # HYPERPARAMETERS
     PHASE = 'train'
     CUDA = True     # True for GPU training, False for CPU training
-    DATA_PATH = sds_path + '/DataBaseGlomerulusProjekt/KlassifikationDataBasePython'    # path to input data
-    OUT_PATH = 'output_debug' # path to store output files
+    # DATA_PATH = sds_path + '/DataBaseGlomerulusProjekt/KlassifikationDataBasePython'    # path to input data
+    # DATA_PATH = sds_path + '/Marlen/train2'    # path to input data
+    DATA_PATH = '~/pytorch_dcgan/train_glomerulus/'    # path to input data
+    # DATA_PATH = '~\Data\mnist'
+    OUT_PATH = 'output_glomerulus_256' # path to store output files
     LOG_FILE = os.path.join(OUT_PATH, 'log.txt')    # log file to record loss values
-    BATCH_SIZE = 128        # number of images in one batch, adjust this value according to your GPU memory
+    BATCH_SIZE = 64        # number of images in one batch, adjust this value according to your GPU memory
     IMAGE_CHANNEL = 3   # 1 for grayscale, 3 for rgb image
     Z_DIM = 100
+    dim = 256
     G_HIDDEN = 64
-    X_DIM = 64
+    X_DIM = dim
     D_HIDDEN = 64
-    EPOCH_NUM = 25  # number if epochs for training
-    REAL_LABEL = 1.0
-    FAKE_LABEL = 0.0
+    EPOCH_NUM = 100  # number if epochs for training
+    REAL_LABEL = 1
+    FAKE_LABEL = 0
     lr = 2e-4   # learning rate
     seed = 1    # Change to None to get different results at each run
 
@@ -81,7 +86,55 @@ if __name__ == "__main__":
         torch.cuda.manual_seed(seed)
     cudnn.benchmark = True      # May train faster but cost more memory
 
-    # # MNIST dataset
+    print("Learning rate: ", lr)
+    print("Batch size: ", BATCH_SIZE)
+
+    # trfm_mean = [0.485, 0.456, 0.406]
+    # trfm_std = [0.229, 0.224, 0.225]
+    trfm_mean = [0.5, 0.5, 0.5]
+    trfm_std = [0.5, 0.5, 0.5]
+    # data_transforms = {
+    #     'train': transforms.Compose([
+    #         transforms.Resize(X_DIM),
+    #         transforms.CenterCrop(X_DIM),
+    #         transforms.RandomHorizontalFlip(),
+    #         transforms.RandomVerticalFlip(),
+    #         transforms.RandomRotation(180),
+    #         transforms.ToTensor(),
+    #         transforms.Normalize(trfm_std, trfm_std)
+    #     ]),
+    #     'val': transforms.Compose([
+    #         transforms.Resize(X_DIM),
+    #         transforms.CenterCrop(X_DIM),
+    #         transforms.ToTensor(),
+    #         transforms.Normalize(trfm_mean, trfm_std)
+    #     ]),
+    # }
+    #
+    # image_datasets = {x: torchvision.datasets.ImageFolder(os.path.join(DATA_PATH, x),
+    #                                           data_transforms[x])
+    #                   for x in ['train', 'val']}
+    # dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=BATCH_SIZE,
+    #                                              shuffle=True, num_workers=4)
+    #               for x in ['train', 'val']}
+    # dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
+    # dataloader = dataloaders[PHASE]
+
+    dataset = dset.ImageFolder(root=DATA_PATH,
+                               transform=transforms.Compose([
+                                   transforms.Resize(X_DIM),
+                                   transforms.CenterCrop(X_DIM),
+                                   # transforms.RandomHorizontalFlip(),
+                                   # transforms.RandomVerticalFlip(),
+                                   # transforms.RandomRotation(180),
+                                   transforms.ToTensor(),
+                                   transforms.Normalize(trfm_mean, trfm_std),
+                               ]))
+    assert dataset
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=BATCH_SIZE,
+                                             shuffle=True, num_workers=4)
+
+    # MNIST dataset
     # dataset = dset.MNIST(root=DATA_PATH, download=True,
     #                      transform=transforms.Compose([
     #                      transforms.Resize(X_DIM),
@@ -92,47 +145,30 @@ if __name__ == "__main__":
     # dataloader = torch.utils.data.DataLoader(dataset, batch_size=BATCH_SIZE,
     #                                          shuffle=True, num_workers=4)
 
-    trfm_mean = [0.485, 0.456, 0.406]
-    trfm_std = [0.229, 0.224, 0.225]
-    data_transforms = {
-        'train': transforms.Compose([
-            transforms.Resize(X_DIM),
-            transforms.CenterCrop(X_DIM),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomVerticalFlip(),
-            transforms.RandomRotation(180),
-            transforms.ToTensor(),
-            transforms.Normalize(trfm_std, trfm_std)
-        ]),
-        'val': transforms.Compose([
-            transforms.Resize(X_DIM),
-            transforms.CenterCrop(X_DIM),
-            transforms.ToTensor(),
-            transforms.Normalize(trfm_mean, trfm_std)
-        ]),
-    }
-
-    image_datasets = {x: torchvision.datasets.ImageFolder(os.path.join(DATA_PATH, x),
-                                              data_transforms[x])
-                      for x in ['train', 'val']}
-    dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=BATCH_SIZE,
-                                                 shuffle=True, num_workers=4)
-                  for x in ['train', 'val']}
-    dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
-
-    dataloader = dataloaders[PHASE]
-
     device = torch.device("cuda:0" if CUDA else "cpu")
 
+    # if(PHASE == 'train'):
     netG = Generator(IMAGE_CHANNEL, Z_DIM, G_HIDDEN).to(device)
     netG.apply(weights_init)
     print(netG)
+    # else:
+    #     netG = Generator(IMAGE_CHANNEL, Z_DIM, G_HIDDEN)
+    #     netG.load_state_dict(torch.load('model_ResNet152.pt'))
+    #     netG.to(device)
 
-    netD = Discriminator(IMAGE_CHANNEL, D_HIDDEN).to(device)
-    netD.apply(weights_init)
-    print(netD)
+    if (PHASE == 'train'):
+        netD = Discriminator(IMAGE_CHANNEL, D_HIDDEN).to(device)
+        netD.apply(weights_init)
+        print(netD)
+    else:
+        # netD = Discriminator(IMAGE_CHANNEL, D_HIDDEN)
+        netD = torchvision.models.resnet152(pretrained=True)
+        netD.modName = 'ResNet152_loaded '
+        # netD = torch.load('model_ResNet152.pt')
+        netD.to(device)
 
     criterion = nn.BCELoss()
+    # criterion = nn.BCEWithLogitsLoss()
 
     viz_noise = torch.randn(BATCH_SIZE, Z_DIM, 1, 1, device=device)
 
@@ -140,14 +176,14 @@ if __name__ == "__main__":
     optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(0.5, 0.999))
 
     for epoch in range(EPOCH_NUM):
-        i=-1
+        # i=-1
         # for inputs, labels in dataloader:
-        #     i=i+1
+        #         i=i+1
         for i, data in enumerate(dataloader):
             # x_real = inputs.to(device)
             x_real = data[0].to(device)
-            real_label = torch.full((x_real.size(0),), REAL_LABEL, device=device)
-            fake_label = torch.full((x_real.size(0),), FAKE_LABEL, device=device)
+            real_label = torch.full((x_real.size(0),), REAL_LABEL, dtype=torch.float32, device=device)
+            fake_label = torch.full((x_real.size(0),), FAKE_LABEL, dtype=torch.float32, device=device)
 
             # Update D with real data
             netD.zero_grad()
