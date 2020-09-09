@@ -7,8 +7,6 @@ Pipfile.lock
 /output*
 /train*
 # remove later from repo
-main2.py
 model_ResNet152.pt
-cgan.py
-build_gan.py
+
 

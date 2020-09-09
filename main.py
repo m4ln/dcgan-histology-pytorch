@@ -55,21 +55,21 @@ if __name__ == "__main__":
     # True for GPU training, False for CPU training
     CUDA = True
     # path to input data
-    DATA_PATH = '~/pytorch_dcgan/train_glomerulus/'
+    DATA_PATH = '~/pytorch_dcgan/train_glomerulus_01/'
     MNIST = False
     if MNIST:
         DATA_PATH = '~/pytorch_dcgan/train_mnist/mnist'
-    OUT_PATH = 'output_glomerulus_256' # path to store output files
+    OUT_PATH = 'output_glomerulus_01_200' # path to store output files
     # number of images in one batch, adjust this value according to your GPU memory
-    BATCH_SIZE = 64
+    BATCH_SIZE = 128
     # number if epochs for training (increase value for better results)
-    EPOCH_NUM = 100
+    EPOCH_NUM = 200
     # learning rate (increase value for better results)
     lr = 2e-4
     # number of channels, 1 for grayscale, 3 for rgb image
     IMAGE_CHANNEL = 3
     Z_DIM = 100
-    IMG_SIZE = 256
+    IMG_SIZE = 64
     G_HIDDEN = 64
     X_DIM = 64
     D_HIDDEN = 64
@@ -115,7 +115,7 @@ if __name__ == "__main__":
         dataset = dset.ImageFolder(root=DATA_PATH,
                                    transform=transforms.Compose([
                                        transforms.Resize(IMG_SIZE),
-                                       # transforms.CenterCrop(X_DIM),
+                                       transforms.CenterCrop(X_DIM),
                                        # transforms.RandomHorizontalFlip(),
                                        # transforms.RandomVerticalFlip(),
                                        # transforms.RandomRotation(180),
