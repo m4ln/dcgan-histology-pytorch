@@ -2,7 +2,30 @@ import errno
 import os
 import shutil
 import sys
+from pathlib import Path
 
+# check os for sds path
+def check_os():
+    if sys.platform == "linux":
+        path1 = '/home/marlen/sds_hd/sd18a006/'
+        path2 = '/home/mr38/sds_hd/sd18a006/'
+        if Path(path1).exists():
+            return path1
+        elif Path(path2).exists():
+            return path2
+        else:
+            print('error: sds path cannot be defined! Abort')
+            return 1
+    elif sys.platform == "win32":
+        path = '//lsdf02.urz.uni-heidelberg.de/sd18A006/'
+        if Path(path).exists():
+            return path
+        else:
+            print('error: sds path cannot be defined! Abort')
+            return 1
+    else:
+        print('error: sds path cannot be defined! Abort')
+        return 1
 
 def to_np(var):
     """Exports torch.Tensor to Numpy array.
