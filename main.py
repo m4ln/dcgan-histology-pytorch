@@ -6,10 +6,8 @@
 # IMPORTS
 import os
 import sys
-from pathlib import Path
 
 import numpy as np
-import torchvision
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import torch.optim as optim
@@ -21,45 +19,17 @@ import torchvision.utils as vutils
 import utils
 from dcgan import Generator, Discriminator, weights_init
 
-def check_os():
-    # check os for sds path
-    if sys.platform == "linux":
-        path1 = '/home/marlen/sds_hd/sd18a006/'
-        path2 = '/home/mr38/sds_hd/sd18a006/'
-        if Path(path1).exists():
-            return path1
-        elif Path(path2).exists():
-            return path2
-        else:
-            print('error: sds path cannot be defined! Abort')
-            return 1
-    elif sys.platform == "win32":
-        path = '//lsdf02.urz.uni-heidelberg.de/sd18A006/'
-        if Path(path).exists():
-            return path
-        else:
-            print('error: sds path cannot be defined! Abort')
-            return 1
-    else:
-        print('error: sds path cannot be defined! Abort')
-        return 1
-
 if __name__ == "__main__":
-    # if data path is sds
-    # sds_path = check_os()
-
-    ###################
-    # HYPERPARAMETERS #
-    ###################
-    PHASE = 'train'
+    # HYPERPARAMETERS
     # True for GPU training, False for CPU training
     CUDA = True
     # path to input data
-    DATA_PATH = '~/pytorch_dcgan/train_glomerulus_01/'
+    DATA_PATH = '~/pytorch_dcgan/data/glomerulus/train/'
     MNIST = False
     if MNIST:
-        DATA_PATH = '~/pytorch_dcgan/train_mnist/mnist'
-    OUT_PATH = 'output_glomerulus_01_200' # path to store output files
+        DATA_PATH = '~/pytorch_dcgan/data/mnist/mnist'
+    # path to store output files
+    OUT_PATH = '~/pytorch_dcgan/output/output_tmp'
     # number of images in one batch, adjust this value according to your GPU memory
     BATCH_SIZE = 128
     # number if epochs for training (increase value for better results)
@@ -129,28 +99,15 @@ if __name__ == "__main__":
     # init GPU or CPU
     device = torch.device("cuda:0" if CUDA else "cpu")
 
-    if(PHASE == 'train'):
-        # Generator
-        netG = Generator(IMAGE_CHANNEL, Z_DIM, G_HIDDEN).to(device)
-        netG.apply(weights_init)
-        print(netG)
+    # Generator
+    netG = Generator(IMAGE_CHANNEL, Z_DIM, G_HIDDEN).to(device)
+    netG.apply(weights_init)
+    print(netG)
 
-        # Discriminator
-        netD = Discriminator(IMAGE_CHANNEL, D_HIDDEN).to(device)
-        netD.apply(weights_init)
-        print(netD)
-    else:
-        # Generator
-        netG = Generator(IMAGE_CHANNEL, Z_DIM, G_HIDDEN)
-        netG.load_state_dict(torch.load('model_ResNet152.pt'))
-        netG.to(device)
-
-        # Discriminator
-        # netD = Discriminator(IMAGE_CHANNEL, D_HIDDEN)
-        netD = torchvision.models.resnet152(pretrained=True)
-        netD.modName = 'ResNet152_loaded '
-        # netD = torch.load('model_ResNet152.pt')
-        netD.to(device)
+    # Discriminator
+    netD = Discriminator(IMAGE_CHANNEL, D_HIDDEN).to(device)
+    netD.apply(weights_init)
+    print(netD)
 
     # loss function
     criterion = nn.BCELoss()
