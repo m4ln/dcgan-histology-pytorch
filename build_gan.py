@@ -14,8 +14,6 @@ from cgan import Generator as cganG
 from cgan import Discriminator as cganD
 from infogan import Generator as infoganG
 from infogan import Discriminator as infoganD
-from dcgan import Generator as cganG
-from dcgan import Discriminator as cganD
 
 def _weights_init(m):
     classname = m.__class__.__name__

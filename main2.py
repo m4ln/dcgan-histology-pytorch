@@ -30,7 +30,7 @@ def main():
 
         # path to input data
         DATA_PATH = '~/pytorch_dcgan/train_glomerulus/'
-        MNIST = True
+        MNIST = False
         if MNIST:
             DATA_PATH = '~/pytorch_dcgan/train_mnist/mnist'
 
@@ -46,7 +46,7 @@ def main():
             dataset = dset.ImageFolder(root=DATA_PATH,
                                        transform=transforms.Compose([
                                            transforms.Resize(IMG_SIZE),
-                                           # transforms.CenterCrop(X_DIM),
+                                           transforms.CenterCrop(IMG_SIZE),
                                            # transforms.RandomHorizontalFlip(),
                                            # transforms.RandomVerticalFlip(),
                                            # transforms.RandomRotation(180),
@@ -77,13 +77,13 @@ if __name__ == '__main__':
     parser.add_argument('--cuda', type=boolean_string, default=True, help='enable CUDA.')
     parser.add_argument('--train', type=boolean_string, default=True, help='train mode or eval mode.')
     parser.add_argument('--data_dir', type=str, default='~/Data/mnist', help='Directory for dataset.')
-    parser.add_argument('--out_dir', type=str, default='output_cgan_test', help='Directory for output.')
+    parser.add_argument('--out_dir', type=str, default='output_glomerulus_cgan_test', help='Directory for output.')
     parser.add_argument('--epochs', type=int, default=200, help='number of epochs')
-    parser.add_argument('--batch_size', type=int, default=128, help='size of batches')
+    parser.add_argument('--batch_size', type=int, default=8, help='size of batches')
     parser.add_argument('--lr', type=float, default=2e-4, help='learning rate')
     parser.add_argument('--latent_dim', type=int, default=100, help='latent space dimension')
-    parser.add_argument('--classes', type=int, default=10, help='number of classes')
-    parser.add_argument('--img_size', type=int, default=256, help='size of images')
+    parser.add_argument('--classes', type=int, default=12, help='number of classes')
+    parser.add_argument('--img_size', type=int, default=200, help='size of images')
     parser.add_argument('--channels', type=int, default=3, help='number of image channels')
     parser.add_argument('--log_interval', type=int, default=100, help='interval between logging and image sampling')
     parser.add_argument('--seed', type=int, default=1, help='random seed')
