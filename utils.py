@@ -4,20 +4,27 @@ import shutil
 import sys
 from pathlib import Path
 
-# check os for sds path
-def check_os():
+# retrieve correct path depending on os and sds
+def check_os(sds=False):
     if sys.platform == "linux":
-        path1 = '/home/marlen/sds_hd/sd18a006/'
-        path2 = '/home/mr38/sds_hd/sd18a006/'
+        sds_path = ''
+        if sds:
+            sds_path = '/sds_hd/sd18a006/'
+        path1 = '/home/marlen/'
+        path2 = '/home/mr38/'
         if Path(path1).exists():
-            return path1
+            return path1 + sds_path
         elif Path(path2).exists():
-            return path2
+            return path2 + sds_path
         else:
             print('error: sds path cannot be defined! Abort')
             return 1
     elif sys.platform == "win32":
-        path = '//lsdf02.urz.uni-heidelberg.de/sd18A006/'
+        path = ''
+        if sds:
+            path = '//lsdf02.urz.uni-heidelberg.de/sd18A006/'
+        else:
+            path = 'C:/Users/mr38/'
         if Path(path).exists():
             return path
         else:
