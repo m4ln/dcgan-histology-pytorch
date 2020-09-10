@@ -18,18 +18,19 @@ if __name__ == "__main__":
     # HYPERPARAMETERS
     # True for GPU training, False for CPU training
     CUDA = True
-    # path to input data
+    # path to project
     SDS = False
     MNIST = False
-    PROJECT_PATH = Path(utils.check_os(sds=SDS))#.joinpath('/pytorch_dcgan/')
-    PROJECT_PATH = PROJECT_PATH.joinpath('pytorch_dcgan')
-    DATA_PATH = PROJECT_PATH.joinpath('input/glomerulus/train')
+    PROJECT_PATH = Path(utils.check_os(sds=SDS)).joinpath('pytorch_dcgan')
+    class_name = '01'
+    # path to input date
+    DATA_PATH = PROJECT_PATH.joinpath('input/glomerulus/', class_name)
     if MNIST:
         DATA_PATH = PROJECT_PATH.joinpath('input/mnist/mnist')
     # path to store output files
-    OUT_PATH = PROJECT_PATH.joinpath('output/output_tmp')
+    OUT_PATH = PROJECT_PATH.joinpath('output', class_name, 'train')
     # number of images in one batch, adjust this value according to your GPU memory
-    BATCH_SIZE = 128
+    BATCH_SIZE = 64
     # number if epochs for training (increase value for better results)
     EPOCH_NUM = 200
     # learning rate (increase value for better results)
@@ -37,10 +38,9 @@ if __name__ == "__main__":
     # number of channels, 1 for grayscale, 3 for rgb image
     IMAGE_CHANNEL = 3
     Z_DIM = 100
-    IMG_SIZE = 64
-    G_HIDDEN = 64
-    X_DIM = 64
-    D_HIDDEN = 64
+    X_DIM = 128
+    G_HIDDEN = X_DIM
+    D_HIDDEN = G_HIDDEN
     # labels for classification (1=real, 0=fake)
     REAL_LABEL = 1
     FAKE_LABEL = 0
@@ -75,14 +75,14 @@ if __name__ == "__main__":
     if MNIST:
         dataset = dset.MNIST(root=DATA_PATH, download=True,
                              transform=transforms.Compose([
-                                 transforms.Resize(IMG_SIZE),
+                                 transforms.Resize(X_DIM),
                                  transforms.ToTensor(),
                                  transforms.Normalize((0.5,), (0.5,))
                              ]))
     else:
         dataset = dset.ImageFolder(root=DATA_PATH,
                                    transform=transforms.Compose([
-                                       transforms.Resize(IMG_SIZE),
+                                       transforms.Resize(X_DIM),
                                        transforms.CenterCrop(X_DIM),
                                        # transforms.RandomHorizontalFlip(),
                                        # transforms.RandomVerticalFlip(),
@@ -93,6 +93,8 @@ if __name__ == "__main__":
     assert dataset
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=BATCH_SIZE,
                                              shuffle=True, num_workers=4)
+
+    print("Number of training images: {}\n".format(len(dataset)))
 
     # init GPU or CPU
     device = torch.device("cuda:0" if CUDA else "cpu")

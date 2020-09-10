@@ -1,5 +1,5 @@
-import os
 import sys
+from pathlib import Path
 
 from datetime import datetime
 
@@ -20,29 +20,25 @@ if __name__ == "__main__":
     VIZ_MODE = 0
     # True for GPU training, False for CPU training
     CUDA = True
+    # path to project
+    SDS = False
+    MNIST = False
+    PROJECT_PATH = Path(utils.check_os(sds=SDS)).joinpath('pytorch_dcgan')
+    # path to input date
+    DATA_PATH = PROJECT_PATH.joinpath('output/01/train/netG_0.pth')
     # path to store output
-    OUT_PATH = '/output/output_glomerulus_100'  # path to store output files
+    OUT_PATH = PROJECT_PATH.joinpath('output/01/test')
     # number of images in one batch, adjust this value according to your GPU memory
-    BATCH_SIZE = 10
-    # number if epochs for training (increase value for better results)
-    EPOCH_NUM = 200
-    # learning rate (increase value for better results)
-    lr = 2e-4
+    BATCH_SIZE = 1
     # number of channels, 1 for grayscale, 3 for rgb image
     IMAGE_CHANNEL = 3
     Z_DIM = 100
-    IMG_SIZE = 64
-    G_HIDDEN = 64
-    X_DIM = 64
-    D_HIDDEN = 64
-    # labels for classification (1=real, 0=fake)
-    REAL_LABEL = 1
-    FAKE_LABEL = 0
+    G_HIDDEN = 512
     # Change to None to get different results at each run
     seed = None
 
     # create log file and write outputs
-    LOG_FILE = os.path.join(OUT_PATH, 'log.txt')
+    LOG_FILE = OUT_PATH.joinpath('log.txt')
     utils.clear_folder(OUT_PATH)
     print("Logging to {}\n".format(LOG_FILE))
     sys.stdout = utils.StdOut(LOG_FILE)
@@ -65,7 +61,7 @@ if __name__ == "__main__":
 
     # Generator
     netG = Generator(IMAGE_CHANNEL, Z_DIM, G_HIDDEN)
-    netG.load_state_dict(torch.load(os.path.join(OUT_PATH, 'netG_99.pth')))
+    netG.load_state_dict(torch.load(DATA_PATH))
     netG.to(device)
 
     if VIZ_MODE == 0:
@@ -92,5 +88,5 @@ if __name__ == "__main__":
         viz_sample = netG(viz_tensor)
         viz_vector = utils.to_np(viz_tensor).reshape(BATCH_SIZE, Z_DIM)
         cur_time = datetime.now().strftime("%Y%m%d-%H%M%S")
-        np.savetxt('vec_{}.txt'.format(cur_time), viz_vector)
-        vutils.save_image(viz_sample, 'img_{}.png'.format(cur_time), nrow=10, normalize=True)
+        np.savetxt(OUT_PATH.joinpath('vec_{}.txt'.format(cur_time)), viz_vector)
+        vutils.save_image(viz_sample, OUT_PATH.joinpath('img_{}.png'.format(cur_time)), nrow=10, normalize=True)
