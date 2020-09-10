@@ -4,8 +4,8 @@ __pycache__/
 # pip
 Pipfile.lock
 # data input and output folders
-/output*
-/train*
+/input
+/output
 # remove later from repo
 model_ResNet152.pt
 
