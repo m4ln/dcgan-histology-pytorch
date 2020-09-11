@@ -8,5 +8,9 @@ Pipfile.lock
 /output
 # remove later from repo
 model_ResNet152.pt
+build_gan.py
+cgan.py
+infogan.py
+
 
 
