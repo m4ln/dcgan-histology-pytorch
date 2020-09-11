@@ -22,23 +22,24 @@ if __name__ == "__main__":
     SDS = False
     MNIST = False
     PROJECT_PATH = Path(utils.check_os(sds=SDS)).joinpath('pytorch_dcgan')
-    class_name = '01'
+    project_name = 'glomerulus'
+    class_name = '02'
     # path to input date
-    DATA_PATH = PROJECT_PATH.joinpath('input/glomerulus/', class_name)
+    DATA_PATH = PROJECT_PATH.joinpath('input', project_name, class_name)
     if MNIST:
         DATA_PATH = PROJECT_PATH.joinpath('input/mnist/mnist')
     # path to store output files
-    OUT_PATH = PROJECT_PATH.joinpath('output', class_name, 'train')
+    OUT_PATH = PROJECT_PATH.joinpath('output',project_name, class_name, 'train')
     # number of images in one batch, adjust this value according to your GPU memory
-    BATCH_SIZE = 64
+    BATCH_SIZE = 128
     # number if epochs for training (increase value for better results)
-    EPOCH_NUM = 200
+    EPOCH_NUM = 300
     # learning rate (increase value for better results)
     lr = 2e-4
     # number of channels, 1 for grayscale, 3 for rgb image
     IMAGE_CHANNEL = 3
     Z_DIM = 100
-    X_DIM = 128
+    X_DIM = 64
     G_HIDDEN = X_DIM
     D_HIDDEN = G_HIDDEN
     # labels for classification (1=real, 0=fake)
