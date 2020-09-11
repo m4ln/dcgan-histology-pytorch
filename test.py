@@ -24,18 +24,22 @@ if __name__ == "__main__":
     SDS = False
     MNIST = False
     PROJECT_PATH = Path(utils.check_os(sds=SDS)).joinpath('pytorch_dcgan')
+    project_name = 'glomerulus'
+    class_name = '01'
     # path to input date
-    DATA_PATH = PROJECT_PATH.joinpath('output/01/train/netG_0.pth')
+    DATA_PATH = PROJECT_PATH.joinpath('output', project_name, class_name, 'train/netG_199.pth')
     # path to store output
-    OUT_PATH = PROJECT_PATH.joinpath('output/01/test')
+    OUT_PATH = PROJECT_PATH.joinpath('output', project_name, class_name, 'test')
     # number of images in one batch, adjust this value according to your GPU memory
-    BATCH_SIZE = 1
+    BATCH_SIZE = 10
     # number of channels, 1 for grayscale, 3 for rgb image
     IMAGE_CHANNEL = 3
     Z_DIM = 100
-    G_HIDDEN = 512
+    G_HIDDEN = 64
     # Change to None to get different results at each run
     seed = None
+    # number of iterations to create images
+    IMAGE_COUNT = 20
 
     # create log file and write outputs
     LOG_FILE = OUT_PATH.joinpath('log.txt')
@@ -64,29 +68,30 @@ if __name__ == "__main__":
     netG.load_state_dict(torch.load(DATA_PATH))
     netG.to(device)
 
-    if VIZ_MODE == 0:
-        viz_tensor = torch.randn(BATCH_SIZE, Z_DIM, 1, 1, device=device)
-    elif VIZ_MODE == 1:
-        load_vector = np.loadtxt('vec_20190317-223131.txt')
-        xp = [0, 1]
-        yp = np.vstack([load_vector[2], load_vector[9]])   # choose two exemplar vectors
-        xvals = np.linspace(0, 1, num=BATCH_SIZE)
-        sample = interp1d(xp, yp, axis=0)
-        viz_tensor = torch.tensor(sample(xvals).reshape(BATCH_SIZE, Z_DIM, 1, 1), dtype=torch.float32, device=device)
-    elif VIZ_MODE == 2:
-        load_vector = np.loadtxt('vec_20190317-223131.txt')
-        z1 = (load_vector[0] + load_vector[6] + load_vector[8]) / 3.
-        z2 = (load_vector[1] + load_vector[2] + load_vector[4]) / 3.
-        z3 = (load_vector[3] + load_vector[4] + load_vector[6]) / 3.
-        z_new = z1 - z2 + z3
-        sample = np.zeros(shape=(BATCH_SIZE, Z_DIM))
-        for i in range(BATCH_SIZE):
-            sample[i] = z_new + 0.1 * np.random.normal(-1.0, 1.0, 100)
-        viz_tensor = torch.tensor(sample.reshape(BATCH_SIZE, Z_DIM, 1, 1), dtype=torch.float32, device=device)
+    for i in range(IMAGE_COUNT):
+        if VIZ_MODE == 0:
+            viz_tensor = torch.randn(BATCH_SIZE, Z_DIM, 1, 1, device=device)
+        elif VIZ_MODE == 1:
+            load_vector = np.loadtxt('vec_20190317-223131.txt')
+            xp = [0, 1]
+            yp = np.vstack([load_vector[2], load_vector[9]])   # choose two exemplar vectors
+            xvals = np.linspace(0, 1, num=BATCH_SIZE)
+            sample = interp1d(xp, yp, axis=0)
+            viz_tensor = torch.tensor(sample(xvals).reshape(BATCH_SIZE, Z_DIM, 1, 1), dtype=torch.float32, device=device)
+        elif VIZ_MODE == 2:
+            load_vector = np.loadtxt('vec_20190317-223131.txt')
+            z1 = (load_vector[0] + load_vector[6] + load_vector[8]) / 3.
+            z2 = (load_vector[1] + load_vector[2] + load_vector[4]) / 3.
+            z3 = (load_vector[3] + load_vector[4] + load_vector[6]) / 3.
+            z_new = z1 - z2 + z3
+            sample = np.zeros(shape=(BATCH_SIZE, Z_DIM))
+            for i in range(BATCH_SIZE):
+                sample[i] = z_new + 0.1 * np.random.normal(-1.0, 1.0, 100)
+            viz_tensor = torch.tensor(sample.reshape(BATCH_SIZE, Z_DIM, 1, 1), dtype=torch.float32, device=device)
 
-    with torch.no_grad():
-        viz_sample = netG(viz_tensor)
-        viz_vector = utils.to_np(viz_tensor).reshape(BATCH_SIZE, Z_DIM)
-        cur_time = datetime.now().strftime("%Y%m%d-%H%M%S")
-        np.savetxt(OUT_PATH.joinpath('vec_{}.txt'.format(cur_time)), viz_vector)
-        vutils.save_image(viz_sample, OUT_PATH.joinpath('img_{}.png'.format(cur_time)), nrow=10, normalize=True)
+        with torch.no_grad():
+            viz_sample = netG(viz_tensor)
+            viz_vector = utils.to_np(viz_tensor).reshape(BATCH_SIZE, Z_DIM)
+            cur_time = datetime.now().strftime("%Y%m%d-%H%M%S")
+            np.savetxt(OUT_PATH.joinpath('vec_{}.txt'.format(i)), viz_vector)
+            vutils.save_image(viz_sample, OUT_PATH.joinpath('img_{}.png'.format(i)), nrow=10, normalize=True)
