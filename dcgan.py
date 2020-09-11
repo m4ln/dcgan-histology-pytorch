@@ -18,7 +18,7 @@ class Generator(nn.Module):
         lay2 = G_HIDDEN * 16
         lay3 = G_HIDDEN * 8
         lay4 = G_HIDDEN * 4
-        lay5 = G_HIDDEN * 2
+        # lay5 = G_HIDDEN * 2
         # lay6 = G_HIDDEN * 1
 
         kernel = 4
@@ -40,16 +40,16 @@ class Generator(nn.Module):
             nn.ConvTranspose2d(lay3, lay4, kernel, 2, 1, bias=False),
             nn.BatchNorm2d(lay4),
             nn.ReLU(True),
-            # 5th layer
-            nn.ConvTranspose2d(lay4, lay5, kernel, 2, 1, bias=False),
-            nn.BatchNorm2d(lay5),
-            nn.ReLU(True),
+            # # 5th layer
+            # nn.ConvTranspose2d(lay4, lay5, kernel, 2, 1, bias=False),
+            # nn.BatchNorm2d(lay5),
+            # nn.ReLU(True),
             # # 6th layer
             # nn.ConvTranspose2d(lay5, lay6, kernel, 2, 1, bias=False),
             # nn.BatchNorm2d(lay6),
             # nn.ReLU(True),
             # output layer
-            nn.ConvTranspose2d(lay5, IMAGE_CHANNEL, kernel, 2, 1, bias=False),
+            nn.ConvTranspose2d(lay4, IMAGE_CHANNEL, kernel, 2, 1, bias=False),
             nn.Tanh()
         )
 
@@ -64,7 +64,7 @@ class Discriminator(nn.Module):
         lay2 = D_HIDDEN * 2
         lay3 = D_HIDDEN * 4
         lay4 = D_HIDDEN * 8
-        lay5 = D_HIDDEN * 16
+        # lay5 = D_HIDDEN * 16
         # lay6 = D_HIDDEN * 32
 
         kernel = 4
@@ -85,16 +85,16 @@ class Discriminator(nn.Module):
             nn.Conv2d(lay3, lay4, kernel, 2, 1, bias=False),
             nn.BatchNorm2d(lay4),
             nn.LeakyReLU(0.2, inplace=True),
-            # 5th layer
-            nn.Conv2d(lay4, lay5, kernel, 2, 1, bias=False),
-            nn.BatchNorm2d(lay5),
-            nn.LeakyReLU(0.2, inplace=True),
+            # # 5th layer
+            # nn.Conv2d(lay4, lay5, kernel, 2, 1, bias=False),
+            # nn.BatchNorm2d(lay5),
+            # nn.LeakyReLU(0.2, inplace=True),
             # # 6th layer
             # nn.Conv2d(lay5, lay6, kernel, 2, 1, bias=False),
             # nn.BatchNorm2d(lay6),
             # nn.LeakyReLU(0.2, inplace=True),
             # output layer
-            nn.Conv2d(lay5, 1, kernel, 1, 0, bias=False),
+            nn.Conv2d(lay4, 1, kernel, 1, 0, bias=False),
             nn.Sigmoid()
         )
 
