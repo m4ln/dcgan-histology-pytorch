@@ -19,23 +19,19 @@ if __name__ == "__main__":
     # True for GPU training, False for CPU training
     CUDA = True
     # path to project
-    SDS = False
-    MNIST = False
-    PROJECT_PATH = Path(utils.check_os(sds=SDS)).joinpath('pytorch_dcgan')
     project_name = 'glomerulus'
-    class_name = '02'
+    class_name = '05'
+    PROJECT_PATH = Path('D:/pytorch_dcgan')
     # path to input date
-    DATA_PATH = PROJECT_PATH.joinpath('input', project_name, class_name)
-    if MNIST:
-        DATA_PATH = PROJECT_PATH.joinpath('input/mnist/mnist')
+    IN_PATH = PROJECT_PATH.joinpath('input', project_name, class_name)
     # path to store output files
-    OUT_PATH = PROJECT_PATH.joinpath('output',project_name, class_name, 'train')
+    OUT_PATH = PROJECT_PATH.joinpath('output', project_name, class_name, 'train')
     # number of images in one batch, adjust this value according to your GPU memory
     BATCH_SIZE = 128
     # number if epochs for training (increase value for better results)
-    EPOCH_NUM = 300
+    EPOCH_NUM = 500
     # learning rate (increase value for better results)
-    lr = 2e-4
+    LR = 2e-4
     # number of channels, 1 for grayscale, 3 for rgb image
     IMAGE_CHANNEL = 3
     Z_DIM = 100
@@ -46,7 +42,7 @@ if __name__ == "__main__":
     REAL_LABEL = 1
     FAKE_LABEL = 0
     # Change to None to get different results at each run
-    seed = 1
+    SEED = 1
 
     # create log file and write outputs
     LOG_FILE = OUT_PATH.joinpath('log.txt')
@@ -58,30 +54,23 @@ if __name__ == "__main__":
     if CUDA:
         print("CUDA version: {}\n".format(torch.version.cuda))
 
-    if seed is None:
-        seed = np.random.randint(1, 10000)
-    print("Random Seed: {}\n".format(seed))
-    np.random.seed(seed)
-    torch.manual_seed(seed)
+    if SEED is None:
+        SEED = np.random.randint(1, 10000)
+    print("Random Seed: {}\n".format(SEED))
+    np.random.seed(SEED)
+    torch.manual_seed(SEED)
     if CUDA:
-        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed(SEED)
     cudnn.benchmark = True      # May train faster but cost more memory
 
     # training parameters
-    print("Learning rate: {}".format(lr))
+    print("Learning rate: {}".format(LR))
     print("Batch size: {}".format(BATCH_SIZE))
     print("Epochs: {}\n".format(EPOCH_NUM))
 
     # load dataset
-    if MNIST:
-        dataset = dset.MNIST(root=DATA_PATH, download=True,
-                             transform=transforms.Compose([
-                                 transforms.Resize(X_DIM),
-                                 transforms.ToTensor(),
-                                 transforms.Normalize((0.5,), (0.5,))
-                             ]))
-    else:
-        dataset = dset.ImageFolder(root=DATA_PATH,
+    if IN_PATH.exists():
+        dataset = dset.ImageFolder(root=IN_PATH,
                                    transform=transforms.Compose([
                                        transforms.Resize(X_DIM),
                                        transforms.CenterCrop(X_DIM),
@@ -91,6 +80,17 @@ if __name__ == "__main__":
                                        transforms.ToTensor(),
                                        transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
                                    ]))
+    else:
+        print("no data available, using MNIST dataset instead")
+        IMAGE_CHANNEL = 1
+        IN_PATH = PROJECT_PATH.joinpath('input/mnist/mnist')
+        dataset = dset.MNIST(root=IN_PATH, download=True,
+                             transform=transforms.Compose([
+                                 transforms.Resize(X_DIM),
+                                 transforms.ToTensor(),
+                                 transforms.Normalize((0.5,), (0.5,))
+                             ]))
+
     assert dataset
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=BATCH_SIZE,
                                              shuffle=True, num_workers=4)
@@ -117,8 +117,8 @@ if __name__ == "__main__":
     viz_noise = torch.randn(BATCH_SIZE, Z_DIM, 1, 1, device=device)
 
     # optimizer
-    optimizerD = optim.Adam(netD.parameters(), lr=lr, betas=(0.5, 0.999))
-    optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(0.5, 0.999))
+    optimizerD = optim.Adam(netD.parameters(), lr=LR, betas=(0.5, 0.999))
+    optimizerG = optim.Adam(netG.parameters(), lr=LR, betas=(0.5, 0.999))
 
     for epoch in range(EPOCH_NUM):
         for i, data in enumerate(dataloader):
