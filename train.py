@@ -15,17 +15,15 @@ import utils
 from dcgan import Generator, Discriminator, weights_init
 
 if __name__ == "__main__":
-    # HYPERPARAMETERS
+    # ==================================================================================================================
+    #                                       CHANGE HYPERPARAMETERS HERE
+    # ==================================================================================================================
     # True for GPU training, False for CPU training
     CUDA = True
-    # path to project
-    project_name = 'glomerulus'
-    class_name = '05'
-    PROJECT_PATH = Path('D:/pytorch_dcgan')
-    # path to input date
-    IN_PATH = PROJECT_PATH.joinpath('input', project_name, class_name)
-    # path to store output files
-    OUT_PATH = PROJECT_PATH.joinpath('output', project_name, class_name, 'train')
+    # path to input data
+    IN_PATH = Path('/home/galaxy/sds_hd/sd18a006/DataBaseGlomerulusProjekt/DatabaseClassification/train')
+    # project name
+    PROJECT_NAME = 'glomerulus'
     # number of images in one batch, adjust this value according to your GPU memory
     BATCH_SIZE = 128
     # number if epochs for training (increase value for better results)
@@ -43,7 +41,14 @@ if __name__ == "__main__":
     FAKE_LABEL = 0
     # Change to None to get different results at each run
     SEED = 1
+    # ==================================================================================================================
+    #                                       END OF CHANGE
+    # ==================================================================================================================
 
+    # path to project
+    PROJECT_PATH = Path('./')
+    # path to store output files
+    OUT_PATH = PROJECT_PATH.joinpath('output', PROJECT_NAME, 'train')
     # create log file and write outputs
     LOG_FILE = OUT_PATH.joinpath('log.txt')
     utils.clear_folder(OUT_PATH)

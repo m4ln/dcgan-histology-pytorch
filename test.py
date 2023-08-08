@@ -15,13 +15,13 @@ import utils
 from dcgan import Generator, Discriminator, weights_init
 
 if __name__ == "__main__":
-    # HYPERPARAMETERS
-    # path to project
-    PROJECT_PATH = Path('D:/pytorch_dcgan/output/glomerulus/01')
-    # path to input date
-    IN_PATH = PROJECT_PATH.joinpath('train/netG_199.pth')
-    # path to store output
-    OUT_PATH = PROJECT_PATH.joinpath('test')
+    # ==================================================================================================================
+    #                                       CHANGE HYPERPARAMETERS HERE
+    # ==================================================================================================================
+    # project name
+    PROJECT_NAME = 'glomerulus'
+    #  generator network name
+    NET_G = 'netG_150.pth'
     # number of iterations to create images
     IMAGE_COUNT = 50
     # number of images in one batch, adjust this value according to your GPU memory
@@ -36,7 +36,16 @@ if __name__ == "__main__":
     VIZ_MODE = 0
     # True for GPU training, False for CPU training
     CUDA = True
+    # ==================================================================================================================
+    #                                       END OF CHANGE
+    # ==================================================================================================================
 
+    # path to project
+    PROJECT_PATH = Path('./')
+    # path to input data and generator network name
+    IN_PATH = PROJECT_PATH.joinpath('output', PROJECT_NAME, 'train', NET_G)
+    # path to store output
+    OUT_PATH = PROJECT_PATH.joinpath('output', PROJECT_NAME, 'test')
     # create log file and write outputs
     # LOG_FILE = OUT_PATH.joinpath('log.txt')
     utils.clear_folder(OUT_PATH)
