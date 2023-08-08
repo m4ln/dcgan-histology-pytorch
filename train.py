@@ -20,6 +20,8 @@ if __name__ == "__main__":
     # ==================================================================================================================
     # True for GPU training, False for CPU training
     CUDA = True
+    # path to project
+    PROJECT_PATH = Path('./')
     # path to input data
     IN_PATH = Path('/home/galaxy/sds_hd/sd18a006/DataBaseGlomerulusProjekt/DatabaseClassification/train')
     # project name
@@ -45,8 +47,6 @@ if __name__ == "__main__":
     #                                       END OF CHANGE
     # ==================================================================================================================
 
-    # path to project
-    PROJECT_PATH = Path('./')
     # path to store output files
     OUT_PATH = PROJECT_PATH.joinpath('output', PROJECT_NAME, 'train')
     # create log file and write outputs

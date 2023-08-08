@@ -23,7 +23,7 @@ The Code is derived from Chapter 4 & 5 from [Hany, J. & Walters, G. (2019). Hand
   It might be necessary to install PyTorch manually from https://pytorch.org/get-started/locally/
 
 ### Training
-- Change the hyperparameters inside `train.py` (Line 21-43)
+- Change the hyperparameters inside `train.py` (Line 21-45)
 - You can train the model on the [MNIST](https://www.tensorflow.org/datasets/catalog/mnist) dataset by not providing a valid dataset path
 - To train on your own data change `IN_PATH` (Line 24) to your corresponding path, it should contain a subfolder of images for each class
 - Train a model:
@@ -32,7 +32,7 @@ The Code is derived from Chapter 4 & 5 from [Hany, J. & Walters, G. (2019). Hand
   ```
   
 ### Generating Fake Samples/Testing
-- Change the hyperparameters inside `train.py` (Line 21-38)
+- Change the hyperparameters inside `train.py` (Line 21-40)
 - To generate new samples run:
   ```bash
   python test.py

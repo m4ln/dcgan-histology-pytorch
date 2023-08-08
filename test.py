@@ -18,6 +18,8 @@ if __name__ == "__main__":
     # ==================================================================================================================
     #                                       CHANGE HYPERPARAMETERS HERE
     # ==================================================================================================================
+    # path to project
+    PROJECT_PATH = Path('./')
     # project name
     PROJECT_NAME = 'glomerulus'
     #  generator network name
@@ -40,8 +42,6 @@ if __name__ == "__main__":
     #                                       END OF CHANGE
     # ==================================================================================================================
 
-    # path to project
-    PROJECT_PATH = Path('./')
     # path to input data and generator network name
     IN_PATH = PROJECT_PATH.joinpath('output', PROJECT_NAME, 'train', NET_G)
     # path to store output
