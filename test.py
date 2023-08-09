@@ -87,6 +87,14 @@ def main():
         torch.cuda.manual_seed(seed)
     cudnn.benchmark = True      # May train faster but cost more memory
 
+    # print arguments
+    print("Project path: {}".format(project_path))
+    print("Number of images to create: {}".format(image_count))
+    print("Batch size: {}".format(batch_size))
+    print("Image dimension: {}".format(image_dim))
+    print("Image channel: {}".format(image_channel))
+    print('Output path: {}\n'.format(out_path))
+
     # init GPU or CPU
     device = torch.device("cuda:0" if cuda else "cpu")
 

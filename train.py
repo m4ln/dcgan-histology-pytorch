@@ -75,7 +75,6 @@ def main():
     # create log file and write outputs
     log_file = out_path.joinpath('log.txt')
     # ==========================================================================
-
     utils.clear_folder(out_path)
     print("Logging to {}\n".format(log_file))
     sys.stdout = utils.StdOut(log_file)
@@ -124,7 +123,11 @@ def main():
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
                                              shuffle=True, num_workers=4)
 
-    print("Number of training images: {}\n".format(len(dataset)))
+    print("Data path: {}".format(data_path))
+    print("Number of training images: {}".format(len(dataset)))
+    print("Image dimension: {}".format(image_dim))
+    print("Image channel: {}".format(image_channel))
+    print('Output path: {}\n'.format(out_path))
 
     # init GPU or CPU
     device = torch.device("cuda:0" if cuda else "cpu")
