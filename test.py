@@ -1,102 +1,127 @@
-import sys
-from pathlib import Path
-
-from datetime import datetime
-
+import argparse
 import numpy as np
-
+from pathlib import Path
+from scipy.interpolate import interp1d
+import sys
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torchvision.utils as vutils
 
-from scipy.interpolate import interp1d
-
 import utils
-from dcgan import Generator, Discriminator, weights_init
+from dcgan import Generator
 
-if __name__ == "__main__":
+def main():
+    # define arguments
+    parser = argparse.ArgumentParser(description='PyTorch GAN')
+    parser.add_argument('--batch_size', type=int, default=10,
+                        help='batch size')
+    parser.add_argument('--no_cuda', action='store_true', default=False,
+                        help='disables cuda testing')
+    parser.add_argument('--img_chan', type=int, default=1, help='image channel')
+    parser.add_argument('--img_count', type=int, default=50,
+                        help='number of images to create')
+    parser.add_argument('--img_dim', type=int, default=64,
+                        help='image dimension')
+    parser.add_argument('--net_g', type=str, default='netG_4.pth',
+                        help='generator network name to load (default: netG_4.pth)')
+    parser.add_argument('--project_name', type=str, default='mnist',
+                        help='project name, used to create output folder')
+    parser.add_argument('--project_path', type=str, default=None,
+                        help='project path')
+    args = parser.parse_args()
+
     # ==================================================================================================================
     #                                       CHANGE HYPERPARAMETERS HERE
     # ==================================================================================================================
-    # path to project
-    PROJECT_PATH = Path('./')
-    # project name
-    PROJECT_NAME = 'glomerulus'
-    #  generator network name
-    NET_G = 'netG_150.pth'
-    # number of iterations to create images
-    IMAGE_COUNT = 50
+
     # number of images in one batch, adjust this value according to your GPU memory
-    BATCH_SIZE = 10
-    # number of channels, 1 for grayscale, 3 for rgb image
-    IMAGE_CHANNEL = 3
-    Z_DIM = 100
-    G_HIDDEN = 64
-    # Change to None to get different results at each run
-    SEED = None
-    # 0: random; 1: interpolation; 2: semantic calculation
-    VIZ_MODE = 0
+    batch_size = args.batch_size
     # True for GPU training, False for CPU training
-    CUDA = True
-    # ==================================================================================================================
-    #                                       END OF CHANGE
-    # ==================================================================================================================
+    if args.no_cuda is False and torch.cuda.is_available():
+        cuda = True
+    else:
+        cuda = False
+    # number of channels, 1 for grayscale, 3 for rgb image
+    image_channel = args.img_chan
+    # image dimension
+    image_dim = args.img_dim
+    # number of iterations to create images
+    image_count = args.img_count
+    #  generator network name
+    net_g = args.net_g
+    # path to project
+    if args.project_path is None:
+        project_path = Path.cwd()
+    else:
+        project_path = Path(args.project_path)
+    # project name
+    project_name = args.project_name
+    # ==========================================================================
+    z_dim = 100
+    g_hidden = image_dim
+    # Change to None to get different results at each run
+    seed = None
+    # 0: random; 1: interpolation; 2: semantic calculation
+    viz_mode = 0
+    # ==========================================================================
 
     # path to input data and generator network name
-    IN_PATH = PROJECT_PATH.joinpath('output', PROJECT_NAME, 'train', NET_G)
+    in_path = project_path.joinpath('output', project_name, 'train', net_g)
     # path to store output
-    OUT_PATH = PROJECT_PATH.joinpath('output', PROJECT_NAME, 'test')
+    out_path = project_path.joinpath('output', project_name, 'test')
     # create log file and write outputs
-    # LOG_FILE = OUT_PATH.joinpath('log.txt')
-    utils.clear_folder(OUT_PATH)
-    # print("Logging to {}\n".format(LOG_FILE))
-    # sys.stdout = utils.StdOut(LOG_FILE)
-    CUDA = CUDA and torch.cuda.is_available()
+    LOG_FILE = out_path.joinpath('log.txt')
+    utils.clear_folder(out_path)
+    print("Logging to {}\n".format(LOG_FILE))
+    sys.stdout = utils.StdOut(LOG_FILE)
     print("PyTorch version: {}".format(torch.__version__))
-    if CUDA:
-        print("CUDA version: {}\n".format(torch.version.cuda))
+    if cuda:
+        print("cuda version: {}\n".format(torch.version.cuda))
 
-    if SEED is None:
-        SEED = np.random.randint(1, 10000)
-    print("Random Seed: {}\n".format(SEED))
-    np.random.seed(SEED)
-    torch.manual_seed(SEED)
-    if CUDA:
-        torch.cuda.manual_seed(SEED)
+    if seed is None:
+        seed = np.random.randint(1, 10000)
+    print("Random Seed: {}\n".format(seed))
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if cuda:
+        torch.cuda.manual_seed(seed)
     cudnn.benchmark = True      # May train faster but cost more memory
 
     # init GPU or CPU
-    device = torch.device("cuda:0" if CUDA else "cpu")
+    device = torch.device("cuda:0" if cuda else "cpu")
 
     # Generator
-    netG = Generator(IMAGE_CHANNEL, Z_DIM, G_HIDDEN)
-    netG.load_state_dict(torch.load(IN_PATH))
+    netG = Generator(image_channel, z_dim, g_hidden)
+    netG.load_state_dict(torch.load(in_path))
     netG.to(device)
 
-    for i in range(IMAGE_COUNT):
-        if VIZ_MODE == 0:
-            viz_tensor = torch.randn(BATCH_SIZE, Z_DIM, 1, 1, device=device)
-        elif VIZ_MODE == 1:
+    for i in range(image_count):
+        if viz_mode == 0:
+            viz_tensor = torch.randn(batch_size, z_dim, 1, 1, device=device)
+        elif viz_mode == 1:
             load_vector = np.loadtxt('vec_20190317-223131.txt')
             xp = [0, 1]
             yp = np.vstack([load_vector[2], load_vector[9]])   # choose two exemplar vectors
-            xvals = np.linspace(0, 1, num=BATCH_SIZE)
+            xvals = np.linspace(0, 1, num=batch_size)
             sample = interp1d(xp, yp, axis=0)
-            viz_tensor = torch.tensor(sample(xvals).reshape(BATCH_SIZE, Z_DIM, 1, 1), dtype=torch.float32, device=device)
-        elif VIZ_MODE == 2:
+            viz_tensor = torch.tensor(sample(xvals).reshape(batch_size, z_dim, 1, 1), dtype=torch.float32, device=device)
+        elif viz_mode == 2:
             load_vector = np.loadtxt('vec_20190317-223131.txt')
             z1 = (load_vector[0] + load_vector[6] + load_vector[8]) / 3.
             z2 = (load_vector[1] + load_vector[2] + load_vector[4]) / 3.
             z3 = (load_vector[3] + load_vector[4] + load_vector[6]) / 3.
             z_new = z1 - z2 + z3
-            sample = np.zeros(shape=(BATCH_SIZE, Z_DIM))
-            for i in range(BATCH_SIZE):
+            sample = np.zeros(shape=(batch_size, z_dim))
+            for i in range(batch_size):
                 sample[i] = z_new + 0.1 * np.random.normal(-1.0, 1.0, 100)
-            viz_tensor = torch.tensor(sample.reshape(BATCH_SIZE, Z_DIM, 1, 1), dtype=torch.float32, device=device)
+            viz_tensor = torch.tensor(sample.reshape(batch_size, z_dim, 1, 1), dtype=torch.float32, device=device)
 
         with torch.no_grad():
             viz_sample = netG(viz_tensor)
-            # viz_vector = utils.to_np(viz_tensor).reshape(BATCH_SIZE, Z_DIM)
+            # viz_vector = utils.to_np(viz_tensor).reshape(batch_size, z_dim)
             # cur_time = datetime.now().strftime("%Y%m%d-%H%M%S")
-            # np.savetxt(OUT_PATH.joinpath('vec_{}.txt'.format(i)), viz_vector)
-            vutils.save_image(viz_sample, OUT_PATH.joinpath('img_{}.png'.format(i)), nrow=10, normalize=True)
+            # np.savetxt(out_path.joinpath('vec_{}.txt'.format(i)), viz_vector)
+            vutils.save_image(viz_sample, out_path.joinpath('img_{}.png'.format(i)), nrow=10, normalize=True)
+
+if __name__ == "__main__":
+    main()

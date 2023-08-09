@@ -1,8 +1,7 @@
-# IMPORTS
-import sys
-from pathlib import Path
-
+import argparse
 import numpy as np
+from pathlib import Path
+import sys
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import torch.optim as optim
@@ -14,104 +13,129 @@ import torchvision.utils as vutils
 import utils
 from dcgan import Generator, Discriminator, weights_init
 
-if __name__ == "__main__":
-    # ==================================================================================================================
-    #                                       CHANGE HYPERPARAMETERS HERE
-    # ==================================================================================================================
-    # True for GPU training, False for CPU training
-    CUDA = True
-    # path to project
-    PROJECT_PATH = Path('./')
-    # path to input data
-    IN_PATH = Path('/home/galaxy/sds_hd/sd18a006/DataBaseGlomerulusProjekt/DatabaseClassification/train')
-    # project name
-    PROJECT_NAME = 'glomerulus'
+def main():
+    # define arguments
+    parser = argparse.ArgumentParser(description='PyTorch GAN')
+    parser.add_argument('--batch_size', type=int, default=128, help='batch size')
+    parser.add_argument('--no_cuda', action='store_true', default=False,
+                        help='disables cuda training')
+    parser.add_argument('--data_path', type=str, default='',
+                        help='data path, if not given, MNISt will be downloaded')
+    parser.add_argument('--epoch_num', type=int, default=5,
+                        help='number of epochs')
+    parser.add_argument('--img_chan', type=int, default=1, help='image channel')
+    parser.add_argument('--img_dim', type=int, default=64,
+                        help='image dimension')
+    parser.add_argument('--lr', type=float, default=0.0002,
+                        help='learning rate')
+    parser.add_argument('--project_name', type=str, default='mnist',
+                        help='project name, used to create output folder')
+    parser.add_argument('--project_path', type=str, default=None,
+                        help='project path')
+    args = parser.parse_args()
+
     # number of images in one batch, adjust this value according to your GPU memory
-    BATCH_SIZE = 128
+    batch_size = args.batch_size
+    # True for GPU training, False for CPU training
+    if args.no_cuda is False and torch.cuda.is_available():
+        cuda = True
+    else:
+        cuda = False
+    # path to input data
+    data_path = args.data_path
     # number if epochs for training (increase value for better results)
-    EPOCH_NUM = 500
-    # learning rate (increase value for better results)
-    LR = 2e-4
+    epoch_num = args.epoch_num
     # number of channels, 1 for grayscale, 3 for rgb image
-    IMAGE_CHANNEL = 3
-    Z_DIM = 100
-    X_DIM = 64
-    G_HIDDEN = X_DIM
-    D_HIDDEN = G_HIDDEN
+    image_channel = args.img_chan
+    # image dimension
+    image_dim = args.img_dim
+    # learning rate (increase value for better results)
+    lr = args.lr
+    # project name
+    project_name = args.project_name
+    # path to project
+    if args.project_path is None:
+        project_path = Path.cwd()
+    else:
+        project_path = Path(args.project_path)
+    # ==========================================================================
+    # noise dimension
+    z_dim = 100
+    # number of generator filters
+    g_hidden = image_dim
+    # number of discriminator filters
+    d_hidden = g_hidden
     # labels for classification (1=real, 0=fake)
-    REAL_LABEL = 1
-    FAKE_LABEL = 0
+    real_label = 1
+    fake_label = 0
     # Change to None to get different results at each run
-    SEED = 1
-    # ==================================================================================================================
-    #                                       END OF CHANGE
-    # ==================================================================================================================
-
+    seed = 1
     # path to store output files
-    OUT_PATH = PROJECT_PATH.joinpath('output', PROJECT_NAME, 'train')
+    out_path = project_path.joinpath('output', project_name, 'train')
     # create log file and write outputs
-    LOG_FILE = OUT_PATH.joinpath('log.txt')
-    utils.clear_folder(OUT_PATH)
-    print("Logging to {}\n".format(LOG_FILE))
-    sys.stdout = utils.StdOut(LOG_FILE)
-    CUDA = CUDA and torch.cuda.is_available()
-    print("PyTorch version: {}".format(torch.__version__))
-    if CUDA:
-        print("CUDA version: {}\n".format(torch.version.cuda))
+    log_file = out_path.joinpath('log.txt')
+    # ==========================================================================
 
-    if SEED is None:
-        SEED = np.random.randint(1, 10000)
-    print("Random Seed: {}\n".format(SEED))
-    np.random.seed(SEED)
-    torch.manual_seed(SEED)
-    if CUDA:
-        torch.cuda.manual_seed(SEED)
+    utils.clear_folder(out_path)
+    print("Logging to {}\n".format(log_file))
+    sys.stdout = utils.StdOut(log_file)
+    print("PyTorch version: {}".format(torch.__version__))
+    if cuda:
+        print("cuda version: {}\n".format(torch.version.cuda))
+
+    if seed is None:
+        seed = np.random.randint(1, 10000)
+    print("Random Seed: {}\n".format(seed))
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if cuda:
+        torch.cuda.manual_seed(seed)
     cudnn.benchmark = True      # May train faster but cost more memory
 
     # training parameters
-    print("Learning rate: {}".format(LR))
-    print("Batch size: {}".format(BATCH_SIZE))
-    print("Epochs: {}\n".format(EPOCH_NUM))
+    print("Learning rate: {}".format(lr))
+    print("Batch size: {}".format(batch_size))
+    print("Epochs: {}\n".format(epoch_num))
 
     # load dataset
-    if IN_PATH.exists():
-        dataset = dset.ImageFolder(root=IN_PATH,
+    try:
+        dataset = dset.ImageFolder(root=data_path,
                                    transform=transforms.Compose([
-                                       transforms.Resize(X_DIM),
-                                       transforms.CenterCrop(X_DIM),
+                                       transforms.Resize(image_dim),
+                                       transforms.CenterCrop(image_dim),
                                        # transforms.RandomHorizontalFlip(),
                                        # transforms.RandomVerticalFlip(),
                                        # transforms.RandomRotation(180),
                                        transforms.ToTensor(),
                                        transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
                                    ]))
-    else:
+    except FileNotFoundError:
         print("no data available, using MNIST dataset instead")
-        IMAGE_CHANNEL = 1
-        IN_PATH = PROJECT_PATH.joinpath('input/mnist/mnist')
-        dataset = dset.MNIST(root=IN_PATH, download=True,
+        image_channel = 1
+        data_path = project_path.joinpath('input/mnist/mnist')
+        dataset = dset.MNIST(root=data_path, download=True,
                              transform=transforms.Compose([
-                                 transforms.Resize(X_DIM),
+                                 transforms.Resize(image_dim),
                                  transforms.ToTensor(),
                                  transforms.Normalize((0.5,), (0.5,))
                              ]))
 
     assert dataset
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=BATCH_SIZE,
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
                                              shuffle=True, num_workers=4)
 
     print("Number of training images: {}\n".format(len(dataset)))
 
     # init GPU or CPU
-    device = torch.device("cuda:0" if CUDA else "cpu")
+    device = torch.device("cuda:0" if cuda else "cpu")
 
     # Generator
-    netG = Generator(IMAGE_CHANNEL, Z_DIM, G_HIDDEN).to(device)
+    netG = Generator(image_channel, z_dim, g_hidden).to(device)
     netG.apply(weights_init)
     print(netG)
 
     # Discriminator
-    netD = Discriminator(IMAGE_CHANNEL, D_HIDDEN).to(device)
+    netD = Discriminator(image_channel, d_hidden).to(device)
     netD.apply(weights_init)
     print(netD)
 
@@ -119,36 +143,36 @@ if __name__ == "__main__":
     criterion = nn.BCELoss()
     # criterion = nn.BCEWithLogitsLoss()
 
-    viz_noise = torch.randn(BATCH_SIZE, Z_DIM, 1, 1, device=device)
+    viz_noise = torch.randn(batch_size, z_dim, 1, 1, device=device)
 
     # optimizer
-    optimizerD = optim.Adam(netD.parameters(), lr=LR, betas=(0.5, 0.999))
-    optimizerG = optim.Adam(netG.parameters(), lr=LR, betas=(0.5, 0.999))
+    optimizerD = optim.Adam(netD.parameters(), lr=lr, betas=(0.5, 0.999))
+    optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(0.5, 0.999))
 
-    for epoch in range(EPOCH_NUM):
+    for epoch in range(epoch_num):
         for i, data in enumerate(dataloader):
             x_real = data[0].to(device)
-            real_label = torch.full((x_real.size(0),), REAL_LABEL, dtype=torch.float32, device=device)
-            fake_label = torch.full((x_real.size(0),), FAKE_LABEL, dtype=torch.float32, device=device)
+            real_label_t = torch.full((x_real.size(0),), real_label, dtype=torch.float32, device=device)
+            fake_label_t = torch.full((x_real.size(0),), fake_label, dtype=torch.float32, device=device)
 
             # Update D with real data
             netD.zero_grad()
             y_real = netD(x_real)
-            loss_D_real = criterion(y_real, real_label)
+            loss_D_real = criterion(y_real, real_label_t)
             loss_D_real.backward()
 
             # Update D with fake data
-            z_noise = torch.randn(x_real.size(0), Z_DIM, 1, 1, device=device)
+            z_noise = torch.randn(x_real.size(0), z_dim, 1, 1, device=device)
             x_fake = netG(z_noise)
             y_fake = netD(x_fake.detach())
-            loss_D_fake = criterion(y_fake, fake_label)
+            loss_D_fake = criterion(y_fake, fake_label_t)
             loss_D_fake.backward()
             optimizerD.step()
 
             # Update G with fake data
             netG.zero_grad()
             y_fake_r = netD(x_fake)
-            loss_G = criterion(y_fake_r, real_label)
+            loss_G = criterion(y_fake_r, real_label_t)
             loss_G.backward()
             optimizerG.step()
 
@@ -159,9 +183,12 @@ if __name__ == "__main__":
                     loss_D_fake.mean().item(),
                     loss_G.mean().item()
                 ))
-                vutils.save_image(x_real, OUT_PATH.joinpath('real_samples.png'), normalize=True)
+                vutils.save_image(x_real, out_path.joinpath('real_samples.png'), normalize=True)
                 with torch.no_grad():
                     viz_sample = netG(viz_noise)
-                    vutils.save_image(viz_sample, OUT_PATH.joinpath('fake_samples_{}.png'.format(epoch)), normalize=True)
-        torch.save(netG.state_dict(), OUT_PATH.joinpath('netG_{}.pth'.format(epoch)))
-        torch.save(netD.state_dict(), OUT_PATH.joinpath('netD_{}.pth'.format(epoch)))
+                    vutils.save_image(viz_sample, out_path.joinpath('fake_samples_{}.png'.format(epoch)), normalize=True)
+        torch.save(netG.state_dict(), out_path.joinpath('netG_{}.pth'.format(epoch)))
+        torch.save(netD.state_dict(), out_path.joinpath('netD_{}.pth'.format(epoch)))
+
+if __name__ == "__main__":
+    main()
