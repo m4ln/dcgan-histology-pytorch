@@ -15,8 +15,8 @@ def main():
     parser = argparse.ArgumentParser(description='PyTorch GAN')
     parser.add_argument('--batch_size', type=int, default=10,
                         help='batch size')
-    parser.add_argument('--no_cuda', action='store_true', default=False,
-                        help='disables cuda testing')
+    parser.add_argument('--cpu', action='store_true', default=False,
+                        help='enables cpu testing (no gpu)')
     parser.add_argument('--img_chan', type=int, default=1, help='image channel')
     parser.add_argument('--img_count', type=int, default=50,
                         help='number of images to create')
@@ -37,7 +37,7 @@ def main():
     # number of images in one batch, adjust this value according to your GPU memory
     batch_size = args.batch_size
     # True for GPU training, False for CPU training
-    if args.no_cuda is False and torch.cuda.is_available():
+    if args.cpu is False and torch.cuda.is_available():
         cuda = True
     else:
         cuda = False

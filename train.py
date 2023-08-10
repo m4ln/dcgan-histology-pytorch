@@ -18,7 +18,7 @@ def main():
     parser = argparse.ArgumentParser(description='PyTorch GAN')
     parser.add_argument('--batch_size', type=int, default=128, help='batch size')
     parser.add_argument('--cpu', action='store_true', default=False,
-                        help='enable cpu training (no gpu)')
+                        help='enables cpu training (no gpu)')
     parser.add_argument('--data_path', type=str, default='',
                         help='data path, if not given, MNISt will be downloaded')
     parser.add_argument('--epoch_num', type=int, default=5,
