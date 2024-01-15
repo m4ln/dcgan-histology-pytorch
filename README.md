@@ -1,6 +1,5 @@
 # DCGAN in PyTorch for Histopathological Image Generation
-An implementation of a DCGAN (Deep Convolutional Generative Adversarial Network) for the generation of histopathological images, i.e classified glomerulus pathologies of the kidney.
-The Code is derived from Chapter 4 & 5 from [Hany, J. & Walters, G. (2019). Hands-on Generative Adversarial Networks with PyTorch 1.0 : implement next-generation neural networks to build powerful gan models using python](https://github.com/PacktPublishing/Hands-On-Generative-Adversarial-Networks-with-PyTorch-1.x#hands-on-generative-adversarial-networks-with-pytorch-10).
+This repository implements a DCGAN (Deep Convolutional Generative Adversarial Network) for generating histopathological images, specifically glomerulus pathologies of the kidney represented by 12 classes. The code is adapted from Chapter 4 & 5 of [Hands-on Generative Adversarial Networks with PyTorch 1.0](https://github.com/PacktPublishing/Hands-On-Generative-Adversarial-Networks-with-PyTorch-1.x#hands-on-generative-adversarial-networks-with-pytorch-10) by Hany, J. & Walters, G. (2019).
 
 ## Prerequisites
 - Linux OS
@@ -10,7 +9,7 @@ The Code is derived from Chapter 4 & 5 from [Hany, J. & Walters, G. (2019). Hand
 ## Getting Started
 ### Installation
 
-- Clone this repo:
+- Clone this repository:
     ```bash
     git clone https://github.com/m4ln/pytorch_dcgan.git
     cd pytorch_dcgan
@@ -20,19 +19,35 @@ The Code is derived from Chapter 4 & 5 from [Hany, J. & Walters, G. (2019). Hand
   ```
   pip install -r requirements.txt
   ```
-  It might be necessary to install PyTorch manually from https://pytorch.org/get-started/locally/
+  Note: It might be necessary to install PyTorch manually from https://pytorch.org/get-started/locally/
 
 ### Training
-- When not providing input arguments the model is trained on the [MNIST](https://www.tensorflow.org/datasets/catalog/mnist) dataset
+- If no input arguments are provided, the model is trained on the [MNIST](https://www.tensorflow.org/datasets/catalog/mnist) dataset
   ```bash
   python train.py
   ```
-- To train on your own data provide the arguments via argparse (check inside `train.py`)
+- To train on your own data, provide the arguments via argparse (check inside `train.py`)
 - The directory to your input data should contain a subfolder of images for each class
   
 ### Generating Fake Samples/Testing
-- To generate new samples run (by default using MNIST trained model as in `train.py`)):
+- To generate new samples, run (by default using the MNIST trained model as in `train.py`):
   ```bash
   python test.py
   ```
-- To test on your own data provide the arguments via argparse (check inside `test.py`)
+- To test on your own data, provide the arguments via argparse (check inside `test.py`)
+
+### Citation
+If you use this project for your research, please cite our [paper](https://doi.org/10.1007/s40620-021-01221-9).
+```
+@article{weis2022assessment,
+  title={Assessment of glomerular morphological patterns by deep learning algorithms},
+  author={Weis, Cleo-Aron and Bindzus, Jan Niklas and Voigt, Jonas and Runz, Marlen and Hertjens, Svetlana and Gaida, Matthias M and Popovic, Zoran V and Porubsky, Stefan},
+  journal={Journal of Nephrology},
+  volume={35},
+  number={2},
+  pages={417--427},
+  year={2022},
+  doi = {10.11588/data/8LKEZF},
+  publisher={Springer}
+}
+```
